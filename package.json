@@ -1,20 +1,21 @@
 {
-  "name": "search-node-modules",
-  "displayName": "search-node-modules",
+  "name": "node-modules-search",
+  "displayName": "node-modules-search",
   "description": "Allow searching through node_modules files",
   "version": "0.0.1",
+  "publisher": "bjervis",
+  "repository": {
+    "url": "https://github.com/benjervis/node-modules-search"
+  },
   "engines": {
     "vscode": "^1.87.0"
   },
-  "categories": [
-    "Other"
-  ],
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "search-node-modules.helloWorld",
+        "command": "node-modules-search.helloWorld",
         "title": "Search node modules..."
       }
     ]

@@ -127,7 +127,7 @@ const getNodeModulesSubDirectories = async (nodeModulesDir: string) => {
 
 export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
-    "search-node-modules.helloWorld",
+    "node-modules-search.helloWorld",
     async () => {
       const nodeModulesDir = await determineNodeModulesDir();
 

@@ -1,4 +1,4 @@
-# search-node-modules README
+# node-modules-search README
 
 VSCode extension for searching through the node_modules directory.
 
