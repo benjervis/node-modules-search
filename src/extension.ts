@@ -101,6 +101,30 @@ const direntToPickOption = (input: Dirent, parentName: string = "") => {
   };
 };
 
+const getNodeModulesSubDirectories = async (nodeModulesDir: string) => {
+  const subNodeModules = await getSubDirectories(nodeModulesDir);
+  const subDirs = await Promise.all(
+    subNodeModules.map(async (subDir) => {
+      if (!subDir.isDirectory()) {
+        return [];
+      }
+
+      const subDirPath = path.join(subDir.path, subDir.name);
+
+      if (await exists(path.join(subDirPath, "package.json"))) {
+        return [{ name: subDir.name, path: subDirPath, type: "dir" }];
+      }
+
+      const subSubDirs = await getSubDirectories(subDirPath);
+      return subSubDirs.map((subSubDir) =>
+        direntToPickOption(subSubDir, subDir.name)
+      );
+    })
+  );
+
+  return subDirs.flat();
+};
+
 export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     "search-node-modules.helloWorld",
@@ -108,28 +132,10 @@ export function activate(context: vscode.ExtensionContext) {
       const nodeModulesDir = await determineNodeModulesDir();
 
       const topLevelNodeModules = path.join(nodeModulesDir, "node_modules");
-      const subNodeModules = await getSubDirectories(topLevelNodeModules);
 
-      const installedPackages = (
-        await Promise.all(
-          subNodeModules.map(async (subDir) => {
-            if (!subDir.isDirectory()) {
-              return [];
-            }
-
-            const subDirPath = path.join(subDir.path, subDir.name);
-
-            if (await exists(path.join(subDirPath, "package.json"))) {
-              return [{ name: subDir.name, path: subDirPath, type: "dir" }];
-            }
-
-            const subSubDirs = await getSubDirectories(subDirPath);
-            return subSubDirs.map((subSubDir) =>
-              direntToPickOption(subSubDir, subDir.name)
-            );
-          })
-        )
-      ).flat();
+      const installedPackages = await getNodeModulesSubDirectories(
+        topLevelNodeModules
+      );
 
       let fileSelected = false;
       let quickPickOptions = installedPackages;
@@ -166,6 +172,14 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         currentLocation = result.information.path;
+        console.log("result.information.path: ", result.information.path);
+
+        if (result.information.path.endsWith("node_modules")) {
+          quickPickOptions = await getNodeModulesSubDirectories(
+            result.information.path
+          );
+          continue;
+        }
 
         const selectionContents = await fs.readdir(result.information.path, {
           withFileTypes: true,
