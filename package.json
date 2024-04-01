@@ -2,7 +2,7 @@
   "name": "node-modules-search",
   "displayName": "node-modules-search",
   "description": "Allow searching through node_modules files",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "bjervis",
   "repository": {
     "url": "https://github.com/benjervis/node-modules-search"
@@ -16,7 +16,7 @@
     "commands": [
       {
         "command": "node-modules-search.helloWorld",
-        "title": "Search node modules..."
+        "title": "node-modules-search: Search node modules..."
       }
     ]
   },
