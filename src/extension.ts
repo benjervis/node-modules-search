@@ -77,11 +77,27 @@ const getDirentType = (input: Dirent) => {
   return "unknown";
 };
 
+const typeToEmoji = (inputType: ReturnType<typeof getDirentType>) =>
+  ({
+    dir: "📂",
+    file: "📄",
+    symlink: "🔗",
+    unknown: "?",
+  }[inputType]);
+
 const direntToPickOption = (input: Dirent, parentName: string = "") => {
+  const type = getDirentType(input);
+
+  const packageName = !parentName
+    ? input.name
+    : [parentName, input.name].join("/");
+
+  const name = `${typeToEmoji(type)} ${packageName}`;
+
   return {
-    name: !parentName ? input.name : [parentName, input.name].join("/"),
+    name,
     path: path.join(input.path, input.name),
-    type: getDirentType(input),
+    type,
   };
 };
 
@@ -91,9 +107,8 @@ export function activate(context: vscode.ExtensionContext) {
     async () => {
       const nodeModulesDir = await determineNodeModulesDir();
 
-      const subNodeModules = await getSubDirectories(
-        path.join(nodeModulesDir, "node_modules")
-      );
+      const topLevelNodeModules = path.join(nodeModulesDir, "node_modules");
+      const subNodeModules = await getSubDirectories(topLevelNodeModules);
 
       const installedPackages = (
         await Promise.all(
@@ -118,11 +133,26 @@ export function activate(context: vscode.ExtensionContext) {
 
       let fileSelected = false;
       let quickPickOptions = installedPackages;
+      let currentLocation = topLevelNodeModules;
 
       while (!fileSelected) {
-        const result = await vscode.window.showQuickPick(
-          quickPickOptions.map((pkg) => ({ label: pkg.name, information: pkg }))
-        );
+        const formattedOptions = quickPickOptions.map((pkg) => ({
+          label: pkg.name,
+          information: pkg,
+        }));
+
+        if (currentLocation !== topLevelNodeModules) {
+          formattedOptions.unshift({
+            label: "..",
+            information: {
+              type: "unknown",
+              name: "back up",
+              path: path.normalize(path.join(currentLocation, "..")),
+            },
+          });
+        }
+
+        const result = await vscode.window.showQuickPick(formattedOptions);
 
         if (!result) {
           return;
@@ -134,6 +164,8 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.Uri.file(result.information.path)
           );
         }
+
+        currentLocation = result.information.path;
 
         const selectionContents = await fs.readdir(result.information.path, {
           withFileTypes: true,
