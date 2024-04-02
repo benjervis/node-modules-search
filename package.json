@@ -2,7 +2,7 @@
   "name": "node-modules-search",
   "displayName": "node-modules-search",
   "description": "Allow searching through node_modules files",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "bjervis",
   "repository": {
     "url": "https://github.com/benjervis/node-modules-search"

@@ -166,9 +166,15 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (result.information.type === "file") {
           fileSelected = true;
-          return await vscode.window.showTextDocument(
+
+          await vscode.window.showTextDocument(
             vscode.Uri.file(result.information.path)
           );
+          await vscode.commands.executeCommand(
+            "workbench.files.action.showActiveFileInExplorer"
+          );
+
+          return;
         }
 
         currentLocation = result.information.path;
